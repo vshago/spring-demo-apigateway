@@ -1,0 +1,47 @@
+server:
+  port: 80
+
+logging:
+  level:
+    reactor:
+      netty: INFO
+    org:
+      springframework:
+        cloud:
+          gateway: TRACE
+
+spring:
+  cloud:
+    gateway:
+      httpserver:
+        wiretap: true
+      httpclient:
+        wiretap: true
+        ssl:
+          useInsecureTrustManager: true
+      routes:
+        - id: registration
+          uri: http://localhost:8081
+          predicates:
+            - Path=/registration
+          filters:
+            - RewritePath=/registration, /auth
+
+        - id: token
+          uri: http://localhost:8081
+          predicates:
+            - Path=/login
+          filters:
+            - RewritePath=/login, /auth/token
+
+        - id: bookstore
+          uri: http://localhost:8080
+          predicates:
+            - Path=/books/**
+
+        - id: help
+          uri: https://spring.io/guides
+          predicates:
+            - Path=/help
+          filters:
+            - RedirectTo=302, https://spring.io/guides
